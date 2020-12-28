@@ -1,0 +1,16 @@
+[package]
+name = "tee_median"
+version = "1.0.0"
+authors = ["Registree"]
+
+[lib]
+name = "tee_median"
+crate-type = ["staticlib"]
+
+[features]
+default = []
+
+[target.'cfg(not(target_env = "sgx"))'.dependencies]
+sgx_types = { git = "https://github.com/apache/teaclave-sgx-sdk.git" }
+sgx_tstd = { git = "https://github.com/apache/teaclave-sgx-sdk.git", features = ["backtrace"] }
+sgx_trts = { git = "https://github.com/apache/teaclave-sgx-sdk.git" }

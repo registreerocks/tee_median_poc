@@ -24,11 +24,18 @@ enclave {
     from "sgx_fs.edl" import *;
 
     include "sgx_tprotected_fs.h"
+    include "sgx_tcrypto.h"
+
+    struct rsa_3072_pub_key {
+       [count = 384]uint8_t* n;
+       [count = 4]uint8_t* e;
+    };
 
     trusted {
         /* define ECALLs here. */
 
         public sgx_status_t calculate_median([in, count=len] int64_t* slice, size_t len, [out] int64_t* median);
-        public sgx_status_t create_keypair();
+        public sgx_status_t create_keypair([user_check]struct rsa_3072_pub_key * pubkey);
+        public sgx_status_t decrypt_data([in, count=len] uint8_t* ciphertext, size_t len);
     };
 };

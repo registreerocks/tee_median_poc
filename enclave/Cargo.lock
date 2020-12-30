@@ -222,6 +222,7 @@ name = "tee_median"
 version = "1.0.0"
 dependencies = [
  "serde_json",
+ "sgx_tcrypto",
  "sgx_tcrypto_helper",
  "sgx_tstd",
  "sgx_types",

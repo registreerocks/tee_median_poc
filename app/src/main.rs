@@ -1,8 +1,10 @@
+extern crate sgx_crypto_helper;
 extern crate sgx_types;
 extern crate sgx_urts;
 use sgx_types::*;
 use sgx_urts::SgxEnclave;
 
+use sgx_crypto_helper::rsa3072::Rsa3072PubKey;
 static ENCLAVE_FILE: &'static str = "enclave.signed.so";
 
 extern "C" {
@@ -14,7 +16,18 @@ extern "C" {
         median: *mut i64,
     ) -> sgx_status_t;
 
-    fn create_keypair(eid: sgx_enclave_id_t, retval: *mut sgx_status_t) -> sgx_status_t;
+    fn create_keypair(
+        eid: sgx_enclave_id_t,
+        retval: *mut sgx_status_t,
+        pubkey: *mut Rsa3072PubKey,
+    ) -> sgx_status_t;
+
+    fn decrypt_data(
+        eid: sgx_enclave_id_t,
+        retval: *mut sgx_status_t,
+        ciphertext: *const u8,
+        len: usize,
+    ) -> sgx_status_t;
 }
 
 fn init_enclave() -> SgxResult<SgxEnclave> {
@@ -49,8 +62,21 @@ fn main() {
     };
 
     let mut c_retval = sgx_status_t::SGX_SUCCESS;
+    let mut pubkey = Rsa3072PubKey::default();
     unsafe {
-        create_keypair(enclave.geteid(), &mut c_retval);
+        create_keypair(enclave.geteid(), &mut c_retval, &mut pubkey);
+    }
+    let mut ciphertext = Vec::<u8>::new();
+    pubkey.encrypt_buffer(b"This string will be encrypted.", &mut ciphertext);
+
+    let mut d_retval = sgx_status_t::SGX_SUCCESS;
+    unsafe {
+        decrypt_data(
+            enclave.geteid(),
+            &mut d_retval,
+            ciphertext.as_ptr(),
+            ciphertext.len(),
+        );
     }
 
     let slice: &mut [i64] = &mut [1, 2, 5, 3, 6];

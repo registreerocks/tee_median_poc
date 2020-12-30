@@ -13,6 +13,8 @@ extern "C" {
         len: usize,
         median: *mut i64,
     ) -> sgx_status_t;
+
+    fn create_keypair(eid: sgx_enclave_id_t, retval: *mut sgx_status_t) -> sgx_status_t;
 }
 
 fn init_enclave() -> SgxResult<SgxEnclave> {
@@ -45,6 +47,11 @@ fn main() {
             return;
         }
     };
+
+    let mut c_retval = sgx_status_t::SGX_SUCCESS;
+    unsafe {
+        create_keypair(enclave.geteid(), &mut c_retval);
+    }
 
     let slice: &mut [i64] = &mut [1, 2, 5, 3, 6];
     let median: &mut i64 = &mut 0;

@@ -11,6 +11,9 @@ crate-type = ["staticlib"]
 default = []
 
 [target.'cfg(not(target_env = "sgx"))'.dependencies]
-sgx_types = { git = "https://github.com/apache/teaclave-sgx-sdk.git" }
-sgx_tstd = { git = "https://github.com/apache/teaclave-sgx-sdk.git", features = ["backtrace"] }
-sgx_trts = { git = "https://github.com/apache/teaclave-sgx-sdk.git" }
+sgx_types = { git = "https://github.com/apache/teaclave-sgx-sdk.git", rev = "v1.1.3"}
+sgx_tstd = { git = "https://github.com/apache/teaclave-sgx-sdk.git", rev = "v1.1.3" }
+sgx_crypto_helper = { package = "sgx_tcrypto_helper", git = "https://github.com/apache/teaclave-sgx-sdk.git" , rev = "v1.1.3"}
+
+[dependencies]
+serde_json = { git = "https://github.com/mesalock-linux/serde-json-sgx" }

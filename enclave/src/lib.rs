@@ -11,12 +11,11 @@ extern crate sgx_tstd as std;
 extern crate sgx_types;
 
 use sgx_types::*;
-use std::io::{self, Read, Write};
+use std::io::{Read, Write};
 use std::prelude::v1::*;
 use std::println;
 use std::sgxfs::SgxFile;
 use std::slice;
-use std::string::String;
 use std::vec::Vec;
 
 use sgx_crypto_helper::rsa3072::Rsa3072KeyPair;
@@ -26,8 +25,13 @@ use sgx_crypto_helper::RsaKeyPair;
 pub const KEYFILE: &'static str = "prov_key.bin";
 
 #[no_mangle]
-pub extern "C" fn calculate_median(slice: *mut i64, len: usize, median: &mut i64) -> sgx_status_t {
-    let data: &mut [i64] = unsafe { slice::from_raw_parts_mut(slice, len) };
+pub extern "C" fn calculate_median(
+    ciphertext: *mut u8,
+    len: usize,
+    median: &mut i64,
+) -> sgx_status_t {
+    let cipertext_slice: &mut [u8] = unsafe { slice::from_raw_parts_mut(ciphertext, len) };
+    let mut data = decrypt_data(cipertext_slice).unwrap();
 
     data.sort_unstable();
     let mid = data.len() / 2;
@@ -66,9 +70,7 @@ pub extern "C" fn create_keypair(pubkey: &mut Rsa3072PubKey) -> sgx_status_t {
     }
 }
 
-#[no_mangle]
-pub extern "C" fn decrypt_data(ciphertext: *mut u8, len: usize) -> sgx_status_t {
-    let ciphertext_slice = unsafe { slice::from_raw_parts(ciphertext, len) };
+fn decrypt_data(ciphertext: &[u8]) -> Result<Vec<i64>, sgx_status_t> {
     let mut keyvec: Vec<u8> = Vec::new();
 
     let key_json_str = match SgxFile::open(KEYFILE) {
@@ -79,12 +81,12 @@ pub extern "C" fn decrypt_data(ciphertext: *mut u8, len: usize) -> sgx_status_t 
             }
             Err(x) => {
                 println!("Read keyfile failed {}", x);
-                return sgx_status_t::SGX_ERROR_UNEXPECTED;
+                return Err(sgx_status_t::SGX_ERROR_UNEXPECTED);
             }
         },
         Err(x) => {
-            println!("get_sealed_pcl_key cannot open keyfile, please check if key is provisioned successfully! {}", x);
-            return sgx_status_t::SGX_ERROR_UNEXPECTED;
+            println!("get_sealed_pcl_key cannot open keyfile, please check that key is provisioned successfully! {}", x);
+            return Err(sgx_status_t::SGX_ERROR_UNEXPECTED);
         }
     };
 
@@ -92,9 +94,9 @@ pub extern "C" fn decrypt_data(ciphertext: *mut u8, len: usize) -> sgx_status_t 
 
     let rsa_keypair: Rsa3072KeyPair = serde_json::from_str(&key_json_str).unwrap();
 
-    rsa_keypair.decrypt_buffer(ciphertext_slice, &mut plaintext);
+    rsa_keypair
+        .decrypt_buffer(ciphertext, &mut plaintext)
+        .unwrap();
 
-    println!("{}", String::from_utf8(plaintext).unwrap());
-
-    sgx_status_t::SGX_SUCCESS
+    Ok(serde_json::from_slice(plaintext.as_slice()).unwrap())
 }

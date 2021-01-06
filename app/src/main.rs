@@ -1,3 +1,4 @@
+extern crate serde_json;
 extern crate sgx_crypto_helper;
 extern crate sgx_types;
 extern crate sgx_urts;
@@ -11,7 +12,7 @@ extern "C" {
     fn calculate_median(
         eid: sgx_enclave_id_t,
         retval: *mut sgx_status_t,
-        some_slice: *mut i64,
+        ciphertext: *mut u8,
         len: usize,
         median: *mut i64,
     ) -> sgx_status_t;
@@ -20,13 +21,6 @@ extern "C" {
         eid: sgx_enclave_id_t,
         retval: *mut sgx_status_t,
         pubkey: *mut Rsa3072PubKey,
-    ) -> sgx_status_t;
-
-    fn decrypt_data(
-        eid: sgx_enclave_id_t,
-        retval: *mut sgx_status_t,
-        ciphertext: *const u8,
-        len: usize,
     ) -> sgx_status_t;
 }
 
@@ -61,25 +55,18 @@ fn main() {
         }
     };
 
+    let slice: &mut [i64] = &mut [1, 2, 5, 3, 6];
+
     let mut c_retval = sgx_status_t::SGX_SUCCESS;
     let mut pubkey = Rsa3072PubKey::default();
     unsafe {
         create_keypair(enclave.geteid(), &mut c_retval, &mut pubkey);
     }
     let mut ciphertext = Vec::<u8>::new();
-    pubkey.encrypt_buffer(b"This string will be encrypted.", &mut ciphertext);
+    let plaintext = serde_json::to_string(slice).unwrap();
 
-    let mut d_retval = sgx_status_t::SGX_SUCCESS;
-    unsafe {
-        decrypt_data(
-            enclave.geteid(),
-            &mut d_retval,
-            ciphertext.as_ptr(),
-            ciphertext.len(),
-        );
-    }
+    pubkey.encrypt_buffer(plaintext.as_bytes(), &mut ciphertext);
 
-    let slice: &mut [i64] = &mut [1, 2, 5, 3, 6];
     let median: &mut i64 = &mut 0;
 
     let mut retval = sgx_status_t::SGX_SUCCESS;
@@ -87,8 +74,8 @@ fn main() {
         calculate_median(
             enclave.geteid(),
             &mut retval,
-            slice.as_mut_ptr(),
-            slice.len(),
+            ciphertext.as_mut_ptr(),
+            ciphertext.len(),
             median,
         )
     };

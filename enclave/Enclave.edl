@@ -36,6 +36,5 @@ enclave {
 
         public sgx_status_t calculate_median([in, count=len] int64_t* slice, size_t len, [out] int64_t* median);
         public sgx_status_t create_keypair([user_check]struct rsa_3072_pub_key * pubkey);
-        public sgx_status_t decrypt_data([in, count=len] uint8_t* ciphertext, size_t len);
     };
 };

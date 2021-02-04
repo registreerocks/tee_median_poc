@@ -8,5 +8,10 @@ build = "build.rs"
 sgx_types = { git = "https://github.com/apache/teaclave-sgx-sdk.git" , rev = "v1.1.3"}
 sgx_urts = { git = "https://github.com/apache/teaclave-sgx-sdk.git" , rev = "v1.1.3"}
 sgx_crypto_helper = { git = "https://github.com/apache/teaclave-sgx-sdk.git" , rev = "v1.1.3"}
+serde = {version = "1.0.123", features = ["derive"]}
 serde_json = "1.0"
-
+itertools = "*"
+libloading = "*"
+p256 = { version = "0.7.2", features = ["arithmetic", "pem"]}
+data-encoding = "2.3.2"
+sha2 = "0.9.3"

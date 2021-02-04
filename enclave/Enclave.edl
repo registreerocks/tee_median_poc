@@ -22,6 +22,9 @@ enclave {
     from "sgx_tstdc.edl" import *;
     from "sgx_tprotected_fs.edl" import *;
     from "sgx_fs.edl" import *;
+    from "sgx_file.edl" import *;
+
+    include "sgx_report.h"
 
     include "sgx_tprotected_fs.h"
     include "sgx_tcrypto.h"
@@ -36,5 +39,8 @@ enclave {
 
         public sgx_status_t calculate_median([in, count=len] int64_t* slice, size_t len, [out] int64_t* median);
         public sgx_status_t create_keypair([user_check]struct rsa_3072_pub_key * pubkey);
+        public uint32_t enclave_create_report([in]const sgx_target_info_t* p_qe3_target,
+                                              [in]const sgx_report_data_t* p_data,
+                                              [out]sgx_report_t* p_report);
     };
 };

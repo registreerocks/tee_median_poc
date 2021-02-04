@@ -1,9 +1,21 @@
 services:
   enclave:
-    image: baiduxlab/sgx-rust:latest
+    build: .
     stdin_open: true # docker run -i
     tty: true        # docker run -t
     volumes:
       - /opt/intel/sgxsdk:/root/sgx
       - ./:/root/tee-poc
       - ../incubator-teaclave-sgx-sdk:/root/sgx-rust
+    ports:
+      - 8443:8443
+  # enclave:
+  #   image: baiduxlab/sgx-rust:latest
+  #   stdin_open: true # docker run -i
+  #   tty: true        # docker run -t
+  #   volumes:
+  #     - /opt/intel/sgxsdk:/root/sgx
+  #     - ./:/root/tee-poc
+  #     - ../incubator-teaclave-sgx-sdk:/root/sgx-rust
+  #   ports:
+  #     - 8443:8443

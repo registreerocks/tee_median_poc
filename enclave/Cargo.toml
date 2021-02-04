@@ -15,6 +15,13 @@ sgx_types = { git = "https://github.com/apache/teaclave-sgx-sdk.git", rev = "v1.
 sgx_tstd = { git = "https://github.com/apache/teaclave-sgx-sdk.git", rev = "v1.1.3" }
 sgx_crypto_helper = { package = "sgx_tcrypto_helper", git = "https://github.com/apache/teaclave-sgx-sdk.git" , rev = "v1.1.3"}
 sgx_tcrypto = { git = "https://github.com/apache/teaclave-sgx-sdk.git", rev = "v1.1.3" }
+sgx_tse = { git = "https://github.com/apache/teaclave-sgx-sdk.git", rev = "v1.1.3" }
+sgx_tkey_exchange = { git = "https://github.com/apache/teaclave-sgx-sdk.git", rev = "v1.1.3" }
 
 [dependencies]
 serde_json = { git = "https://github.com/mesalock-linux/serde-json-sgx" }
+
+
+# [patch.'https://github.com/apache/teaclave-sgx-sdk.git']
+# sgx_alloc = { path = "../../sgx-rust/sgx_alloc" }
+# sgx_demangle = { path = "../../sgx-rust/sgx_demangle" }

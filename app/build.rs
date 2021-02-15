@@ -26,13 +26,23 @@ fn main() {
 
     println!("cargo:rustc-link-search=native={}/lib64", sdk_dir);
     println!("cargo:rustc-link-lib=static=sgx_uprotected_fs");
+
+    // if the linker failed to find libsgx_dcap_ql.so, please make sure that
+    // (1) libsgx-dcap-ql is installed
+    // (2) libsgx_dcap_ql.so exists. typicall at /usr/lib/x86_64-linux-gnu
+    // if libsgx_dcap_ql.so.1 is there, but no libsgx-dcap_ql,
+    // just create a symlink by
+    // ln -s libsgx_dcap_ql.so.1 libsgx_dcap_ql.so
+    println!("cargo:rustc-link-lib=dylib=sgx_dcap_ql");
     match is_sim.as_ref() {
         "SW" => {
+            println!("cargo:rustc-cfg=sgx_mode=\"SW\"");
             println!("cargo:rustc-link-lib=dylib=sgx_urts_sim");
             println!("cargo:rustc-link-lib=dylib=sgx_uae_service_sim");
         }
         _ => {
             // HW by default
+            println!("cargo:rustc-cfg=sgx_mode=\"HW\"");
             println!("cargo:rustc-link-lib=dylib=sgx_urts");
             println!("cargo:rustc-link-lib=dylib=sgx_uae_service");
         }

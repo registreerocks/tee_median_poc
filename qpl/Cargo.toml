@@ -1,0 +1,13 @@
+[package]
+name = "Qpl"
+version = "1.0.0"
+authors = ["The Teaclave Authors"]
+
+[dependencies]
+sgx_types = { git = "https://github.com/apache/teaclave-sgx-sdk.git", rev = "v1.1.3"}
+lazy_static = { version = "*", default-features = false }
+
+[lib]
+name = "qpl"
+crate-type = ["dylib"]
+

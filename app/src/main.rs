@@ -1,9 +1,18 @@
+#[cfg_attr(sgx_mode = "SW", path = "quotes_sim.rs")]
+#[cfg_attr(not(sgx_mode = "SW"), path = "quotes.rs")]
+mod quotes;
+
+mod quote_helpers;
+
+extern crate serde;
 extern crate serde_json;
 extern crate sgx_crypto_helper;
 extern crate sgx_types;
 extern crate sgx_urts;
+use serde_json::Result;
 use sgx_types::*;
 use sgx_urts::SgxEnclave;
+use std::fs;
 
 use sgx_crypto_helper::rsa3072::Rsa3072PubKey;
 static ENCLAVE_FILE: &'static str = "enclave.signed.so";
@@ -54,6 +63,12 @@ fn main() {
             return;
         }
     };
+    let quote = quotes::get_quote(&enclave).unwrap();
+    let maa_result = quote_helpers::parse_quote(quote);
+    let maa_json = serde_json::to_string(&maa_result).unwrap();
+
+    println!("{:?}", maa_json);
+    fs::write("maa-data.json", maa_json);
 
     let slice: &mut [i64] = &mut [1, 2, 5, 3, 6];
 

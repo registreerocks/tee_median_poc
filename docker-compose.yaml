@@ -9,6 +9,9 @@ services:
       - ../incubator-teaclave-sgx-sdk:/root/sgx-rust
     ports:
       - 8443:8443
+    devices:
+      - /dev/sgx/enclave
+      - /dev/sgx/provision
   # enclave:
   #   image: baiduxlab/sgx-rust:latest
   #   stdin_open: true # docker run -i

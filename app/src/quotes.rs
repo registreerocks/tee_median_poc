@@ -1,7 +1,9 @@
+extern crate hex_literal;
 extern crate itertools;
 extern crate libloading;
 extern crate sgx_types;
 extern crate sgx_urts;
+use self::hex_literal::*;
 use self::itertools::*;
 use sgx_types::*;
 use sgx_urts::SgxEnclave;
@@ -26,12 +28,26 @@ fn create_app_enclave_report(
 ) -> Option<sgx_report_t> {
     let mut retval = 0;
     let mut ret_report: sgx_report_t = sgx_report_t::default();
+    let mut p_data = sgx_report_data_t::default();
+    p_data.d = [0; 64];
+    p_data.d.copy_from_slice(
+        "fd49c0425a1aeff9fe04025a5083fa0fc8392f50e7ab779d00d3451805c2b240".as_bytes(),
+    );
+    p_data.d = [0; 64];
+    p_data.d.copy_from_slice(
+        &[
+            &hex!("fd49c0425a1aeff9fe04025a5083fa0fc8392f50e7ab779d00d3451805c2b240"),
+            [0u8].repeat(32).as_slice(),
+        ]
+        .concat(),
+    );
 
     let result = unsafe {
         enclave_create_report(
             enclave.geteid(),
             &mut retval,
             qe_ti,
+            &p_data,
             &mut ret_report as *mut sgx_report_t,
         )
     };
@@ -48,7 +64,7 @@ fn create_app_enclave_report(
 fn generate_quote(enclave: &SgxEnclave) -> Option<Vec<u8>> {
     let mut ti: sgx_target_info_t = sgx_target_info_t::default();
 
-    let _l = libloading::Library::new("./libdcap_quoteprov.so.1").unwrap();
+    //let _l = libloading::Library::new("./libdcap_quoteprov.so.1").unwrap();
     println!("Step1: Call sgx_qe_get_target_info:");
 
     let qe3_ret = unsafe { sgx_qe_get_target_info(&mut ti as *mut _) };
@@ -109,7 +125,6 @@ fn generate_quote(enclave: &SgxEnclave) -> Option<Vec<u8>> {
     let mut quote_vec: Vec<u8> = vec![0; quote_size as usize];
 
     println!("\nStep4: Call sgx_qe_get_quote:");
-
     let qe3_ret =
         unsafe { sgx_qe_get_quote(&app_report as _, quote_size, quote_vec.as_mut_ptr() as _) };
 

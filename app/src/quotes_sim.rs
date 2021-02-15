@@ -1,12 +1,15 @@
 extern crate data_encoding;
+extern crate hex_literal;
 extern crate itertools;
 extern crate libloading;
 extern crate sgx_types;
 extern crate sgx_urts;
 use self::data_encoding::HEXUPPER;
+use self::hex_literal::*;
 use self::itertools::*;
 use sgx_types::*;
 use sgx_urts::SgxEnclave;
+
 const QUOTE_RESULT: &'static str = include_str!("quote_result.txt");
 extern "C" {
     fn enclave_create_report(
@@ -30,7 +33,15 @@ fn create_app_enclave_report(
     let mut ret_report: sgx_report_t = sgx_report_t::default();
 
     let mut p_data = sgx_report_data_t::default();
-    p_data.d = *b"8cfa2d95950554edff7b0a5767b9a6efd22aed9dc42f893dbbfc2306fc4da967";
+
+    p_data.d = [0; 64];
+    p_data.d.copy_from_slice(
+        &[
+            &hex!("fd49c0425a1aeff9fe04025a5083fa0fc8392f50e7ab779d00d3451805c2b240"),
+            [0u8].repeat(32).as_slice(),
+        ]
+        .concat(),
+    );
 
     let result = unsafe {
         enclave_create_report(

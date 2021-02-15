@@ -83,13 +83,6 @@ App_Rust_Path := ./app/target/debug
 App_Enclave_u_Object :=lib/libEnclave_u.a
 App_Name := bin/app
 
-Qpl_Rust_Flags := --release
-Qpl_SRC_Files := $(shell find qpl/ -type f -name '*.rs') $(shell find qpl/ -type f -name 'Cargo.toml')
-Qpl_Path := ./qpl
-Qpl_Target_Path := $(Qpl_Path)/target/release
-Qpl_Obj := $(Qpl_Target_Path)/libqpl.so
-Qpl_Name := ./bin/libdcap_quoteprov.so.1
-
 ######## Enclave Settings ########
 
 ifneq ($(SGX_MODE), HW)
@@ -137,16 +130,11 @@ app/Enclave_u.o: $(Enclave_EDL_Files)
 $(App_Enclave_u_Object): app/Enclave_u.o
 	$(AR) rcsD $@ $^
 
-$(App_Name): $(App_Enclave_u_Object) $(App_SRC_Files) $(Qpl_Name)
+$(App_Name): $(App_Enclave_u_Object) $(App_SRC_Files)
 	@cd app && SGX_SDK=$(SGX_SDK) cargo build $(App_Rust_Flags)
 	@echo "Cargo  =>  $@"
 	mkdir -p bin
 	cp $(App_Rust_Path)/app ./bin
-	cp $(Qpl_Obj) $(Qpl_Name)
-
-$(Qpl_Name): $(Qpl_SRC_Files)
-	@cd $(Qpl_Path) && cargo build $(Qpl_Rust_Flags)
-	@echo "Cargo  =>  $@"
 
 ######## Enclave Objects ########
 

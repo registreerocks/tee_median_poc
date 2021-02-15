@@ -15,3 +15,4 @@ libloading = "*"
 p256 = { version = "0.7.2", features = ["arithmetic", "pem"]}
 data-encoding = "2.3.2"
 sha2 = "0.9.3"
+hex-literal = "0.3.1"
